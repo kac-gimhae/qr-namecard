@@ -683,11 +683,24 @@ gtag('config', 'G-33E0NMRKQ6');
           <option value="차장">차장</option>
           <option value="과장">과장</option>
           <option value="대리">대리</option>
+          <option value="__custom__">직접 입력</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">직위 (영문)</label>
         <input type="text" id="titleEn" class="form-control" placeholder="직위 선택 시 자동 입력" readonly>
+      </div>
+    </div>
+
+    <!-- 직접 입력 영역 (직위) -->
+    <div class="custom-input-group" id="customTitleGroup">
+      <div class="form-group">
+        <label class="form-label">직위 직접 입력 (한글)<span class="required">*</span></label>
+        <input type="text" id="titleCustomKo" class="form-control" placeholder="직위 입력">
+      </div>
+      <div class="form-group">
+        <label class="form-label">직위 직접 입력 (영문)<span class="required">*</span></label>
+        <input type="text" id="titleCustomEn" class="form-control" placeholder="Title in English">
       </div>
     </div>
 
@@ -1040,10 +1053,20 @@ document.getElementById('deptSelect').addEventListener('change', function() {
 document.getElementById('titleSelect').addEventListener('change', function() {
   const val = this.value;
   const titleEnInput = document.getElementById('titleEn');
-  if (val && TITLES[val]) {
-    titleEnInput.value = TITLES[val];
-  } else {
+  const customGroup = document.getElementById('customTitleGroup');
+
+  if (val === '__custom__') {
+    customGroup.classList.add('visible');
     titleEnInput.value = '';
+    titleEnInput.readOnly = true;
+  } else if (val && TITLES[val]) {
+    customGroup.classList.remove('visible');
+    titleEnInput.value = TITLES[val];
+    titleEnInput.readOnly = true;
+  } else {
+    customGroup.classList.remove('visible');
+    titleEnInput.value = '';
+    titleEnInput.readOnly = true;
   }
 });
 
@@ -1096,10 +1119,23 @@ function validate() {
     }
   }
 
-  if (!document.getElementById('titleSelect').value) {
+  const titleVal = document.getElementById('titleSelect').value;
+  if (!titleVal) {
     showToast('직위를 선택해주세요.');
     document.getElementById('titleSelect').focus();
     return false;
+  }
+  if (titleVal === '__custom__') {
+    if (!document.getElementById('titleCustomKo').value.trim()) {
+      showToast('직위 (한글)을 입력해주세요.');
+      document.getElementById('titleCustomKo').focus();
+      return false;
+    }
+    if (!document.getElementById('titleCustomEn').value.trim()) {
+      showToast('직위 (영문)을 입력해주세요.');
+      document.getElementById('titleCustomEn').focus();
+      return false;
+    }
   }
 
   return true;
@@ -1130,11 +1166,18 @@ function generateQR() {
     deptEn = document.getElementById('deptEn').value.trim();
   }
 
-  const titleKo = document.getElementById('titleSelect').value;
-  const titleEn = document.getElementById('titleEn').value.trim();
+  const titleSelectVal = document.getElementById('titleSelect').value;
+  let titleKo, titleEn;
+  if (titleSelectVal === '__custom__') {
+    titleKo = document.getElementById('titleCustomKo').value.trim();
+    titleEn = document.getElementById('titleCustomEn').value.trim();
+  } else {
+    titleKo = titleSelectVal;
+    titleEn = document.getElementById('titleEn').value.trim();
+  }
 
   const cell = formatPhone(document.getElementById('cell').value.trim());
-  const work = formatPhone('0519740' + document.getElementById('workExt').value.trim());
+  const work = formatPhone('051974' + document.getElementById('workExt').value.trim());
   const email = document.getElementById('emailId').value.trim() + '@airport.co.kr';
 
   const orgLineKo = deptKo ? 'ORG:' + orgKo + ';' + deptKo : 'ORG:' + orgKo;
@@ -1270,11 +1313,18 @@ function openPreviewModal() {
     deptEn = 'General Administration Dept.';
   }
 
-  var titleKo = document.getElementById('titleSelect').value || '\uACFC\uC7A5';
-  var titleEn = document.getElementById('titleEn').value.trim() || 'Manager';
+  var titleSelectVal = document.getElementById('titleSelect').value;
+  var titleKo, titleEn;
+  if (titleSelectVal === '__custom__') {
+    titleKo = document.getElementById('titleCustomKo').value.trim() || '\uACFC\uC7A5';
+    titleEn = document.getElementById('titleCustomEn').value.trim() || 'Manager';
+  } else {
+    titleKo = titleSelectVal || '\uACFC\uC7A5';
+    titleEn = document.getElementById('titleEn').value.trim() || 'Manager';
+  }
 
   var cellRaw = document.getElementById('cell').value.trim();
-  var workRaw = '0519740' + (document.getElementById('workExt').value.trim() || '0000');
+  var workRaw = '051974' + (document.getElementById('workExt').value.trim() || '0000');
   var emailId = document.getElementById('emailId').value.trim() || 'abcd1234';
   var emailVal = emailId + '@airport.co.kr';
 
