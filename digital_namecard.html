@@ -399,40 +399,19 @@ function setLang(lang) {
   document.getElementById('btnEn').classList.toggle('active', lang === 'en');
 }
 
-// === 연락처 저장 (iOS: Blob URL, Android: Web Share API, Fallback: a.download) ===
-function fallbackDownload(blob, filename) {
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = filename + '.vcf';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
-
+// === 연락처 저장 (iOS/Android 모두 Blob URL 직접 이동) ===
 function saveContact() {
   var vcard = vcards[currentLang];
-  var filename = currentLang === 'ko'
-    ? DATA.nameKo + '_KAC'
-    : enFullName.replace(/ /g, '') + '_KAC';
-
-  var blob = new Blob([vcard], { type: 'text/vcard' });
   var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   if (isIOS) {
-    // iOS: Blob URL → Safari가 text/vcard 인식 → 연락처 앱 직접 실행
+    // iOS: text/vcard blob URL → Safari 연락처 앱 직접 실행
+    var blob = new Blob([vcard], { type: 'text/vcard' });
     window.location.href = URL.createObjectURL(blob);
-  } else if (navigator.canShare) {
-    // Android: Web Share API → 공유 시트에서 "연락처" 선택 가능
-    var file = new File([blob], filename + '.vcf', { type: 'text/vcard' });
-    if (navigator.canShare({ files: [file] })) {
-      navigator.share({ files: [file], title: filename }).catch(function() {
-        fallbackDownload(blob, filename);
-      });
-    } else {
-      fallbackDownload(blob, filename);
-    }
   } else {
-    fallbackDownload(blob, filename);
+    // Android: text/x-vcard blob URL → OS 연락처 핸들러 직접 실행
+    var blob = new Blob([vcard], { type: 'text/x-vcard' });
+    window.location.href = URL.createObjectURL(blob);
   }
 
   var btn = document.getElementById('saveBtn');
