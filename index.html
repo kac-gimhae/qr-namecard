@@ -680,7 +680,7 @@
 
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">휴대폰<span class="required">*</span></label>
+        <label class="form-label">휴대폰</label>
         <input type="text" id="cell" class="form-control" placeholder="예) 00000000000">
       </div>
       <div class="form-group">
@@ -1038,7 +1038,6 @@ function validate() {
     { id: 'nameKo', label: '이름 (한글)' },
     { id: 'nameEnFirst', label: '이름 (영문 First)' },
     { id: 'nameEnLast', label: '이름 (영문 Last)' },
-    { id: 'cell', label: '휴대폰' },
     { id: 'work', label: '직장전화' },
     { id: 'email', label: '이메일' }
   ];
@@ -1121,11 +1120,11 @@ function generateQR() {
     'FN:\uD55C\uAD6D\uACF5\uD56D\uACF5\uC0AC(\uAE40\uD574\uACF5\uD56D) ' + nameKo + ' ' + titleKo,
     orgLineKo,
     'TITLE:' + titleKo,
-    'TEL;TYPE=CELL:' + cell,
+    cell ? 'TEL;TYPE=CELL:' + cell : '',
     'TEL;TYPE=WORK:' + work,
     'EMAIL;TYPE=WORK:' + email,
     'END:VCARD'
-  ].join('\n');
+  ].filter(Boolean).join('\n');
 
   const vcardEn = [
     'BEGIN:VCARD',
@@ -1134,11 +1133,11 @@ function generateQR() {
     'FN:' + nameEnFirst + ' ' + nameEnLast + ' (KAC Gimhae Airport)',
     orgLineEn,
     'TITLE:' + titleEn,
-    'TEL;TYPE=CELL:' + cell,
+    cell ? 'TEL;TYPE=CELL:' + cell : '',
     'TEL;TYPE=WORK:' + work,
     'EMAIL;TYPE=WORK:' + email,
     'END:VCARD'
-  ].join('\n');
+  ].filter(Boolean).join('\n');
 
   const qrOptions = {
     errorCorrectionLevel: 'M',
