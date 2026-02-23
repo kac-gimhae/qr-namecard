@@ -153,6 +153,10 @@
     stroke: white; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
   }
   .save-success { background: linear-gradient(135deg, #2E7D32, #43A047) !important; }
+  .android-hint {
+    margin-top: 10px; font-size: 11.5px; color: var(--text-secondary);
+    line-height: 1.5; text-align: center;
+  }
   .lang-toggle {
     display: flex; justify-content: center; gap: 8px;
     padding: 0 28px 20px;
@@ -238,6 +242,7 @@
         <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
         <span id="saveBtnText"></span>
       </button>
+      <p class="android-hint" id="androidHint"></p>
     </div>
 
     <div class="lang-toggle">
@@ -344,6 +349,7 @@ var ui = {
     labelWork: '직장전화',
     labelEmail: '이메일',
     saveBtnText: '연락처 저장하기',
+    androidHint: 'Android(삼성 등) 사용자: 버튼을 누른 뒤 다운로드된 파일을 열어 연락처를 가져오세요.',
     toastMsg: '연락처가 저장됩니다',
     saveSuccess: '저장 완료!'
   },
@@ -357,6 +363,7 @@ var ui = {
     labelWork: 'OFFICE',
     labelEmail: 'EMAIL',
     saveBtnText: 'Save Contact',
+    androidHint: 'Android (Samsung, etc.): After tapping the button, open the downloaded file to import the contact.',
     toastMsg: 'Saving contact',
     saveSuccess: 'Saved!'
   }
@@ -394,6 +401,7 @@ function setLang(lang) {
   document.getElementById('labelWork').textContent = d.labelWork;
   document.getElementById('labelEmail').textContent = d.labelEmail;
   document.getElementById('saveBtnText').textContent = d.saveBtnText;
+  document.getElementById('androidHint').textContent = d.androidHint;
 
   document.getElementById('btnKo').classList.toggle('active', lang === 'ko');
   document.getElementById('btnEn').classList.toggle('active', lang === 'en');
