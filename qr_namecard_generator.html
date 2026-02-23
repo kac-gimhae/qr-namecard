@@ -601,12 +601,12 @@
         <input type="text" id="nameKo" class="form-control" placeholder="예) 홍길동">
       </div>
       <div class="form-group">
-        <label class="form-label">이름 (영문 First)<span class="required">*</span></label>
-        <input type="text" id="nameEnFirst" class="form-control" placeholder="예) Gildong">
+        <label class="form-label">영문 성<span class="required">*</span></label>
+        <input type="text" id="nameEnLast" class="form-control" placeholder="예) HONG">
       </div>
       <div class="form-group">
-        <label class="form-label">이름 (영문 Last)<span class="required">*</span></label>
-        <input type="text" id="nameEnLast" class="form-control" placeholder="예) HONG">
+        <label class="form-label">영문 이름<span class="required">*</span></label>
+        <input type="text" id="nameEnFirst" class="form-control" placeholder="예) Gildong">
       </div>
     </div>
 
@@ -699,7 +699,10 @@
     <div class="form-row single">
       <div class="form-group">
         <label class="form-label">이메일<span class="required">*</span></label>
-        <input type="email" id="email" class="form-control" placeholder="예) abcd1234@airport.co.kr">
+        <div style="display:flex; align-items:center; gap:0;">
+          <input type="text" id="emailId" class="form-control" placeholder="예) abcd1234" style="border-radius:6px 0 0 6px; flex:1;">
+          <span style="background:#e9ecef; border:1px solid #ccc; border-left:none; padding:8px 12px; border-radius:0 6px 6px 0; font-size:0.9rem; color:#555; white-space:nowrap;">@airport.co.kr</span>
+        </div>
       </div>
     </div>
   </div>
@@ -1043,10 +1046,10 @@ function formatPhone(raw) {
 function validate() {
   const fields = [
     { id: 'nameKo', label: '이름 (한글)' },
-    { id: 'nameEnFirst', label: '이름 (영문 First)' },
-    { id: 'nameEnLast', label: '이름 (영문 Last)' },
+    { id: 'nameEnLast', label: '영문 성' },
+    { id: 'nameEnFirst', label: '영문 이름' },
     { id: 'work', label: '직장전화' },
-    { id: 'email', label: '이메일' }
+    { id: 'emailId', label: '이메일 ID' }
   ];
 
   for (const f of fields) {
@@ -1115,7 +1118,7 @@ function generateQR() {
 
   const cell = formatPhone(document.getElementById('cell').value.trim());
   const work = formatPhone(document.getElementById('work').value.trim());
-  const email = document.getElementById('email').value.trim();
+  const email = document.getElementById('emailId').value.trim() + '@airport.co.kr';
 
   const orgLineKo = deptKo ? 'ORG:' + orgKo + ';' + deptKo : 'ORG:' + orgKo;
   const orgLineEn = deptEn ? 'ORG:' + orgEn + ';' + deptEn : 'ORG:' + orgEn;
@@ -1232,7 +1235,8 @@ function openPreviewModal() {
 
   var cellRaw = document.getElementById('cell').value.trim();
   var workRaw = document.getElementById('work').value.trim() || '0519740000';
-  var emailVal = document.getElementById('email').value.trim() || 'abcd1234@airport.co.kr';
+  var emailId = document.getElementById('emailId').value.trim() || 'abcd1234';
+  var emailVal = emailId + '@airport.co.kr';
 
   var hasCell = cellRaw.length > 0;
   var cellFmt = hasCell ? formatPhone(cellRaw) : '';
