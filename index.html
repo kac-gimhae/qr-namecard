@@ -749,8 +749,7 @@ gtag('config', 'G-33E0NMRKQ6');
     <div class="qr-grid">
       <div class="qr-item">
         <h3>한국어 명함</h3>
-        <canvas id="qrKorean" style="cursor:pointer;" onclick="downloadVcf('kr')" title="클릭하면 연락처로 저장됩니다"></canvas>
-        <div style="font-size:0.7rem; color:#888; margin:4px 0 2px;">클릭하면 연락처로 저장됩니다</div>
+        <canvas id="qrKorean" style="cursor:pointer;" onclick="downloadVcf('kr')"></canvas>
         <button type="button" class="btn-download" onclick="downloadQR('qrKorean', 'ko')">
           <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           이미지 다운로드
@@ -758,8 +757,7 @@ gtag('config', 'G-33E0NMRKQ6');
       </div>
       <div class="qr-item">
         <h3>English Namecard</h3>
-        <canvas id="qrEnglish" style="cursor:pointer;" onclick="downloadVcf('en')" title="Click to save as contact"></canvas>
-        <div style="font-size:0.7rem; color:#888; margin:4px 0 2px;">Click to save as contact</div>
+        <canvas id="qrEnglish" style="cursor:pointer;" onclick="downloadVcf('en')"></canvas>
         <button type="button" class="btn-download" onclick="downloadQR('qrEnglish', 'en')">
           <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Download Image
@@ -1178,7 +1176,8 @@ function generateQR() {
 
   const cell = formatPhone(document.getElementById('cell').value.trim());
   const work = formatPhone('051974' + document.getElementById('workExt').value.trim());
-  const email = document.getElementById('emailId').value.trim() + '@airport.co.kr';
+  const emailRaw = document.getElementById('emailId').value.trim().replace(/@airport\.co\.kr$/i, '');
+  const email = emailRaw + '@airport.co.kr';
 
   const orgLineKo = deptKo ? 'ORG:' + orgKo + ';' + deptKo : 'ORG:' + orgKo;
   const orgLineEn = deptEn ? 'ORG:' + orgEn + ';' + deptEn : 'ORG:' + orgEn;
@@ -1325,7 +1324,7 @@ function openPreviewModal() {
 
   var cellRaw = document.getElementById('cell').value.trim();
   var workRaw = '051974' + (document.getElementById('workExt').value.trim() || '0000');
-  var emailId = document.getElementById('emailId').value.trim() || 'abcd1234';
+  var emailId = (document.getElementById('emailId').value.trim() || 'abcd1234').replace(/@airport\.co\.kr$/i, '');
   var emailVal = emailId + '@airport.co.kr';
 
   var hasCell = cellRaw.length > 0;
