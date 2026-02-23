@@ -77,7 +77,7 @@
     height: 28px;
     filter: grayscale(1) brightness(10);
   }
-  .name-area { position: relative; z-index: 1; }
+  .name-area { position: relative; z-index: 1; text-align: center; }
   .name-primary {
     font-size: 28px; font-weight: 700; color: #fff;
     letter-spacing: 2px; margin-bottom: 2px;
@@ -336,28 +336,28 @@ var vcards = {
 var ui = {
   ko: {
     namePrimary: nameKoSpaced,
-    nameSecondary: enFullName,
-    titleBadge: DATA.titleKo + ' · ' + DATA.titleEn,
+    nameSecondary: '',
+    titleBadge: DATA.titleKo,
     deptLine1: hasDept ? '한국공항공사 김해공항 ' + DATA.deptKo : '한국공항공사 김해공항',
-    deptLine2: hasDept ? DATA.deptEn + ', Gimhae International Airport' : 'Gimhae International Airport',
+    deptLine2: '',
     labelCell: '휴대전화',
     labelWork: '직장전화',
     labelEmail: '이메일',
     saveBtnText: '연락처 저장하기',
-    toastMsg: '연락처 파일이 다운로드됩니다',
+    toastMsg: '연락처가 저장됩니다',
     saveSuccess: '저장 완료!'
   },
   en: {
     namePrimary: enFullName,
-    nameSecondary: DATA.nameKo,
+    nameSecondary: '',
     titleBadge: DATA.titleEn,
-    deptLine1: hasDept ? 'Korea Airports Corporation, Gimhae International Airport' : 'Korea Airports Corporation, Gimhae International Airport',
-    deptLine2: hasDept ? DATA.deptEn : '',
+    deptLine1: hasDept ? DATA.deptEn : 'Gimhae International Airport',
+    deptLine2: hasDept ? 'Gimhae International Airport<br>Korea Airports Corporation' : 'Korea Airports Corporation',
     labelCell: 'MOBILE',
     labelWork: 'OFFICE',
     labelEmail: 'EMAIL',
     saveBtnText: 'Save Contact',
-    toastMsg: 'Contact file downloading',
+    toastMsg: 'Saving contact',
     saveSuccess: 'Saved!'
   }
 };
@@ -389,7 +389,7 @@ function setLang(lang) {
   document.getElementById('nameSecondary').textContent = d.nameSecondary;
   document.getElementById('titleBadge').textContent = d.titleBadge;
   document.getElementById('deptLine1').textContent = d.deptLine1;
-  document.getElementById('deptLine2').textContent = d.deptLine2;
+  document.getElementById('deptLine2').innerHTML = d.deptLine2;
   if (hasCell) document.getElementById('labelCell').textContent = d.labelCell;
   document.getElementById('labelWork').textContent = d.labelWork;
   document.getElementById('labelEmail').textContent = d.labelEmail;
@@ -402,10 +402,8 @@ function setLang(lang) {
 // === 연락처 저장 ===
 function saveContact() {
   var vcard = vcards[currentLang];
-  var blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
-  var url = URL.createObjectURL(blob);
-  // download 속성 없이 직접 탐색 → iOS/Android 모두 연락처 앱 실행
-  window.location.href = url;
+  // data URI + text/x-vcard → iOS/Android 모두 연락처 앱 직접 실행
+  window.location.href = 'data:text/x-vcard;charset=utf-8,' + encodeURIComponent(vcard);
 
   var btn = document.getElementById('saveBtn');
   var d = ui[currentLang];
