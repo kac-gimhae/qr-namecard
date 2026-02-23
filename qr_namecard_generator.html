@@ -210,8 +210,10 @@ gtag('config', 'G-33E0NMRKQ6');
   .qr-result.visible { display: block; }
   .qr-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 24px;
+    max-width: 320px;
+    margin: 0 auto;
   }
   .qr-item { text-align: center; }
   .qr-item h3 {
@@ -748,19 +750,12 @@ gtag('config', 'G-33E0NMRKQ6');
     <h2 class="card-title">QR 명함</h2>
     <div class="qr-grid">
       <div class="qr-item">
-        <h3>한국어 명함</h3>
-        <canvas id="qrKorean" style="cursor:pointer;" onclick="downloadVcf('kr')"></canvas>
-        <button type="button" class="btn-download" onclick="downloadQR('qrKorean', 'ko')">
+        <h3>디지털 명함 QR</h3>
+        <canvas id="qrNamecard" style="cursor:pointer;" onclick="openNamecard()"></canvas>
+        <div style="font-size:0.75rem; color:#888; margin:6px 0 4px;">QR을 스캔하면 디지털 명함이 표시됩니다</div>
+        <button type="button" class="btn-download" onclick="downloadQR('qrNamecard')">
           <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          이미지 다운로드
-        </button>
-      </div>
-      <div class="qr-item">
-        <h3>English Namecard</h3>
-        <canvas id="qrEnglish" style="cursor:pointer;" onclick="downloadVcf('en')"></canvas>
-        <button type="button" class="btn-download" onclick="downloadQR('qrEnglish', 'en')">
-          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Download Image
+          QR 이미지 다운로드
         </button>
       </div>
     </div>
@@ -989,9 +984,8 @@ gtag('config', 'G-33E0NMRKQ6');
 
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
 <script>
-// === 전역 vCard 저장 ===
-var lastVcardKr = '';
-var lastVcardEn = '';
+// === 전역 URL 저장 ===
+var lastNamecardUrl = '';
 
 // === 데이터 ===
 const DEPARTMENTS = {
@@ -1148,11 +1142,9 @@ function generateQR() {
   const nameKo = document.getElementById('nameKo').value.trim();
   const nameEnFirst = document.getElementById('nameEnFirst').value.trim();
   const nameEnLast = document.getElementById('nameEnLast').value.trim();
-  const orgKo = document.getElementById('orgKo').value.trim();
-  const orgEn = document.getElementById('orgEn').value.trim();
 
   const deptVal = document.getElementById('deptSelect').value;
-  let deptKo, deptEn;
+  let deptKo = '', deptEn = '';
   if (deptVal === '__none__') {
     deptKo = '';
     deptEn = '';
@@ -1174,39 +1166,24 @@ function generateQR() {
     titleEn = document.getElementById('titleEn').value.trim();
   }
 
-  const cell = formatPhone(document.getElementById('cell').value.trim());
-  const work = formatPhone('051974' + document.getElementById('workExt').value.trim());
-  const emailRaw = document.getElementById('emailId').value.trim().replace(/@airport\.co\.kr$/i, '');
-  const email = emailRaw + '@airport.co.kr';
+  const cellRaw = document.getElementById('cell').value.trim();
+  const workExt = document.getElementById('workExt').value.trim();
+  const emailId = document.getElementById('emailId').value.trim().replace(/@airport\.co\.kr$/i, '');
 
-  const orgLineKo = deptKo ? 'ORG:' + orgKo + ';' + deptKo : 'ORG:' + orgKo;
-  const orgLineEn = deptEn ? 'ORG:' + orgEn + ';' + deptEn : 'ORG:' + orgEn;
+  // URL 파라미터 조합
+  const params = new URLSearchParams();
+  params.set('n', nameKo);
+  params.set('ef', nameEnFirst);
+  params.set('el', nameEnLast);
+  if (deptKo) params.set('d', deptKo);
+  if (deptEn) params.set('de', deptEn);
+  params.set('t', titleKo);
+  params.set('te', titleEn);
+  if (cellRaw) params.set('c', cellRaw);
+  params.set('w', workExt);
+  params.set('e', emailId);
 
-  const vcardKr = [
-    'BEGIN:VCARD',
-    'VERSION:3.0',
-    'N:' + nameKo + ';;;;',
-    'FN:\uD55C\uAD6D\uACF5\uD56D\uACF5\uC0AC(\uAE40\uD574\uACF5\uD56D) ' + nameKo + ' ' + titleKo,
-    orgLineKo,
-    'TITLE:' + titleKo,
-    cell ? 'TEL;TYPE=CELL:' + cell : '',
-    'TEL;TYPE=WORK:' + work,
-    'EMAIL;TYPE=WORK:' + email,
-    'END:VCARD'
-  ].filter(Boolean).join('\n');
-
-  const vcardEn = [
-    'BEGIN:VCARD',
-    'VERSION:3.0',
-    'N:' + nameEnLast + ';' + nameEnFirst + ';;;',
-    'FN:' + nameEnFirst + ' ' + nameEnLast + ' (KAC Gimhae Airport)',
-    orgLineEn,
-    'TITLE:' + titleEn,
-    cell ? 'TEL;TYPE=CELL:' + cell : '',
-    'TEL;TYPE=WORK:' + work,
-    'EMAIL;TYPE=WORK:' + email,
-    'END:VCARD'
-  ].filter(Boolean).join('\n');
+  const namecardUrl = 'https://kac-gimhae.github.io/qr-namecard/digital_namecard.html?' + params.toString();
 
   const qrOptions = {
     errorCorrectionLevel: 'M',
@@ -1218,23 +1195,14 @@ function generateQR() {
     }
   };
 
-  // 전역에 저장 (클릭 시 .vcf 다운로드용)
-  lastVcardKr = vcardKr;
-  lastVcardEn = vcardEn;
+  // 전역에 저장 (클릭 시 명함 페이지 열기용)
+  lastNamecardUrl = namecardUrl;
 
-  const canvasKo = document.getElementById('qrKorean');
-  const canvasEn = document.getElementById('qrEnglish');
+  const canvas = document.getElementById('qrNamecard');
 
-  QRCode.toCanvas(canvasKo, vcardKr, qrOptions, function(err) {
+  QRCode.toCanvas(canvas, namecardUrl, qrOptions, function(err) {
     if (err) {
-      showToast('\uD55C\uAD6D\uC5B4 QR \uC0DD\uC131 \uC2E4\uD328: ' + err.message);
-      return;
-    }
-  });
-
-  QRCode.toCanvas(canvasEn, vcardEn, qrOptions, function(err) {
-    if (err) {
-      showToast('\uC601\uC5B4 QR \uC0DD\uC131 \uC2E4\uD328: ' + err.message);
+      showToast('QR \uC0DD\uC131 \uC2E4\uD328: ' + err.message);
       return;
     }
   });
@@ -1248,34 +1216,18 @@ function generateQR() {
   showToast('QR \uCF54\uB4DC\uAC00 \uC0DD\uC131\uB418\uC5C8\uC2B5\uB2C8\uB2E4!');
 }
 
-// === 이미지 다운로드 ===
-// === vCard 파일 다운로드 (연락처 등록) ===
-function downloadVcf(lang) {
-  var vcard = lang === 'kr' ? lastVcardKr : lastVcardEn;
-  if (!vcard) { showToast('먼저 QR코드를 생성해주세요.'); return; }
-  var nameKo = document.getElementById('nameKo').value.trim();
-  var nameEnLast = document.getElementById('nameEnLast').value.trim();
-  var suffix = lang === 'kr' ? '한국어' : 'English';
-  var filename = '명함_' + suffix + '_' + (nameEnLast || '') + (nameKo || '') + '.vcf';
-  var blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
-  var url = URL.createObjectURL(blob);
-  var link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+// === 디지털 명함 페이지 열기 ===
+function openNamecard() {
+  if (!lastNamecardUrl) { showToast('먼저 QR코드를 생성해주세요.'); return; }
+  window.open(lastNamecardUrl, '_blank');
 }
 
-function downloadQR(canvasId, lang) {
+// === QR 이미지 다운로드 ===
+function downloadQR(canvasId) {
   var canvas = document.getElementById(canvasId);
   var nameKo = document.getElementById('nameKo').value.trim();
   var nameEnLast = document.getElementById('nameEnLast').value.trim();
-
-  var prefix = nameEnLast + nameKo;
-  var suffix = lang === 'ko' ? 'Korean' : 'English';
-  var filename = 'QR_' + suffix + '_' + prefix + '.png';
+  var filename = 'QR_' + nameEnLast + nameKo + '.png';
 
   var link = document.createElement('a');
   link.download = filename;
