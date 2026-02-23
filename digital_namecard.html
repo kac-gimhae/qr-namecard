@@ -450,6 +450,18 @@ function showToast(msg) {
     setLang('en');
   }
 })();
+
+// === bfcache 복원 시 UI 리셋 (연락처 저장 후 뒤로가기) ===
+window.addEventListener('pageshow', function(event) {
+  if (event.persisted) {
+    var btn = document.getElementById('saveBtn');
+    var d = ui[currentLang];
+    btn.classList.remove('save-success');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> <span>' + d.saveBtnText + '</span>';
+    setLang(currentLang);
+    document.activeElement.blur();
+  }
+});
 </script>
 </body>
 </html>
