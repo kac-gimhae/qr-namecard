@@ -74,10 +74,10 @@
     margin-bottom: 20px; position: relative; z-index: 1;
   }
   .logo-area img {
-    height: 28px;
+    height: 25px;
     filter: grayscale(1) brightness(10);
   }
-  .name-area { position: relative; z-index: 1; text-align: center; }
+  .name-area { position: relative; z-index: 1; }
   .name-primary {
     font-size: 28px; font-weight: 700; color: #fff;
     letter-spacing: 2px; margin-bottom: 2px;
@@ -94,7 +94,7 @@
     border: 1px solid rgba(255,255,255,0.2);
     border-radius: 20px;
     color: rgba(255,255,255,0.95);
-    font-size: 13px; font-weight: 400;
+    font-size: 15px; font-weight: 400;
     backdrop-filter: blur(10px); letter-spacing: 0.5px;
   }
   .card-body { padding: 24px 28px; }
@@ -103,7 +103,7 @@
     padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px;
   }
   .dept-info .line1 { font-weight: 500; color: var(--text); }
-  .dept-info .line2 { font-size: 12.5px; color: #8899AA; margin-top: 2px; }
+  .dept-info .line2 { font-weight: 500; color: var(--text); margin-top: 2px; }
   .contact-list { display: flex; flex-direction: column; gap: 14px; }
   .contact-item {
     display: flex; align-items: center; gap: 14px;
@@ -399,11 +399,41 @@ function setLang(lang) {
   document.getElementById('btnEn').classList.toggle('active', lang === 'en');
 }
 
-// === 연락처 저장 ===
+// === 연락처 저장 (iOS: Blob URL, Android: Web Share API, Fallback: a.download) ===
+function fallbackDownload(blob, filename) {
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename + '.vcf';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
 function saveContact() {
   var vcard = vcards[currentLang];
-  // data URI + text/x-vcard → iOS/Android 모두 연락처 앱 직접 실행
-  window.location.href = 'data:text/x-vcard;charset=utf-8,' + encodeURIComponent(vcard);
+  var filename = currentLang === 'ko'
+    ? DATA.nameKo + '_KAC'
+    : enFullName.replace(/ /g, '') + '_KAC';
+
+  var blob = new Blob([vcard], { type: 'text/vcard' });
+  var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+  if (isIOS) {
+    // iOS: Blob URL → Safari가 text/vcard 인식 → 연락처 앱 직접 실행
+    window.location.href = URL.createObjectURL(blob);
+  } else if (navigator.canShare) {
+    // Android: Web Share API → 공유 시트에서 "연락처" 선택 가능
+    var file = new File([blob], filename + '.vcf', { type: 'text/vcard' });
+    if (navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: filename }).catch(function() {
+        fallbackDownload(blob, filename);
+      });
+    } else {
+      fallbackDownload(blob, filename);
+    }
+  } else {
+    fallbackDownload(blob, filename);
+  }
 
   var btn = document.getElementById('saveBtn');
   var d = ui[currentLang];
