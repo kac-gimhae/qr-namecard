@@ -699,8 +699,11 @@ gtag('config', 'G-33E0NMRKQ6');
         <input type="text" id="cell" class="form-control" placeholder="예) 00000000000">
       </div>
       <div class="form-group">
-        <label class="form-label">직장전화<span class="required">*</span></label>
-        <input type="text" id="work" class="form-control" placeholder="예) 0519740000">
+        <label class="form-label">직장전화<span class="required">*</span> <small style="font-weight:normal;color:#888;font-size:11px;">내선번호 뒷자리 4개만 입력하세요</small></label>
+        <div style="display:flex; align-items:center; gap:0;">
+          <span style="background:#e9ecef; border:1px solid #ccc; border-right:none; padding:8px 8px; border-radius:6px 0 0 6px; font-size:0.85rem; color:#555; white-space:nowrap;">051-974-</span>
+          <input type="text" id="workExt" class="form-control" placeholder="0000" maxlength="4" style="border-radius:0 6px 6px 0; flex:1;">
+        </div>
       </div>
     </div>
 
@@ -709,7 +712,7 @@ gtag('config', 'G-33E0NMRKQ6');
         <label class="form-label">이메일<span class="required">*</span></label>
         <div style="display:flex; align-items:center; gap:0;">
           <input type="text" id="emailId" class="form-control" placeholder="예) abcd1234" style="border-radius:6px 0 0 6px; flex:1;">
-          <span style="background:#e9ecef; border:1px solid #ccc; border-left:none; padding:8px 12px; border-radius:0 6px 6px 0; font-size:0.9rem; color:#555; white-space:nowrap;">@airport.co.kr</span>
+          <span style="background:#e9ecef; border:1px solid #ccc; border-left:none; padding:8px 6px; border-radius:0 6px 6px 0; font-size:0.78rem; color:#555; white-space:nowrap;">@airport.co.kr</span>
         </div>
       </div>
     </div>
@@ -733,8 +736,8 @@ gtag('config', 'G-33E0NMRKQ6');
     <div class="qr-grid">
       <div class="qr-item">
         <h3>한국어 명함</h3>
-        <canvas id="qrKorean"></canvas>
-        <br>
+        <canvas id="qrKorean" style="cursor:pointer;" onclick="downloadVcf('kr')" title="클릭하면 연락처로 저장됩니다"></canvas>
+        <div style="font-size:0.7rem; color:#888; margin:4px 0 2px;">클릭하면 연락처로 저장됩니다</div>
         <button type="button" class="btn-download" onclick="downloadQR('qrKorean', 'ko')">
           <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           이미지 다운로드
@@ -742,8 +745,8 @@ gtag('config', 'G-33E0NMRKQ6');
       </div>
       <div class="qr-item">
         <h3>English Namecard</h3>
-        <canvas id="qrEnglish"></canvas>
-        <br>
+        <canvas id="qrEnglish" style="cursor:pointer;" onclick="downloadVcf('en')" title="Click to save as contact"></canvas>
+        <div style="font-size:0.7rem; color:#888; margin:4px 0 2px;">Click to save as contact</div>
         <button type="button" class="btn-download" onclick="downloadQR('qrEnglish', 'en')">
           <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Download Image
@@ -975,6 +978,10 @@ gtag('config', 'G-33E0NMRKQ6');
 
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
 <script>
+// === 전역 vCard 저장 ===
+var lastVcardKr = '';
+var lastVcardEn = '';
+
 // === 데이터 ===
 const DEPARTMENTS = {
   '공항운영센터': 'Airport Operations Control Center',
@@ -1056,7 +1063,7 @@ function validate() {
     { id: 'nameKo', label: '이름 (한글)' },
     { id: 'nameEnLast', label: '영문 성' },
     { id: 'nameEnFirst', label: '영문 이름' },
-    { id: 'work', label: '직장전화' },
+    { id: 'workExt', label: '내선번호' },
     { id: 'emailId', label: '이메일 ID' }
   ];
 
@@ -1127,7 +1134,7 @@ function generateQR() {
   const titleEn = document.getElementById('titleEn').value.trim();
 
   const cell = formatPhone(document.getElementById('cell').value.trim());
-  const work = formatPhone(document.getElementById('work').value.trim());
+  const work = formatPhone('0519740' + document.getElementById('workExt').value.trim());
   const email = document.getElementById('emailId').value.trim() + '@airport.co.kr';
 
   const orgLineKo = deptKo ? 'ORG:' + orgKo + ';' + deptKo : 'ORG:' + orgKo;
@@ -1169,6 +1176,10 @@ function generateQR() {
     }
   };
 
+  // 전역에 저장 (클릭 시 .vcf 다운로드용)
+  lastVcardKr = vcardKr;
+  lastVcardEn = vcardEn;
+
   const canvasKo = document.getElementById('qrKorean');
   const canvasEn = document.getElementById('qrEnglish');
 
@@ -1196,6 +1207,25 @@ function generateQR() {
 }
 
 // === 이미지 다운로드 ===
+// === vCard 파일 다운로드 (연락처 등록) ===
+function downloadVcf(lang) {
+  var vcard = lang === 'kr' ? lastVcardKr : lastVcardEn;
+  if (!vcard) { showToast('먼저 QR코드를 생성해주세요.'); return; }
+  var nameKo = document.getElementById('nameKo').value.trim();
+  var nameEnLast = document.getElementById('nameEnLast').value.trim();
+  var suffix = lang === 'kr' ? '한국어' : 'English';
+  var filename = '명함_' + suffix + '_' + (nameEnLast || '') + (nameKo || '') + '.vcf';
+  var blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 function downloadQR(canvasId, lang) {
   var canvas = document.getElementById(canvasId);
   var nameKo = document.getElementById('nameKo').value.trim();
@@ -1244,7 +1274,7 @@ function openPreviewModal() {
   var titleEn = document.getElementById('titleEn').value.trim() || 'Manager';
 
   var cellRaw = document.getElementById('cell').value.trim();
-  var workRaw = document.getElementById('work').value.trim() || '0519740000';
+  var workRaw = '0519740' + (document.getElementById('workExt').value.trim() || '0000');
   var emailId = document.getElementById('emailId').value.trim() || 'abcd1234';
   var emailVal = emailId + '@airport.co.kr';
 
