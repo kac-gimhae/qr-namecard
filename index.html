@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>김해공항 직원 QR 명함 생성기</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #0B3D6B;
+    --primary-light: #1565A0;
+    --accent: #00A8E8;
+    --bg: #F7F9FC;
+    --card: #FFFFFF;
+    --text: #1A2B3C;
+    --text-secondary: #5A6B7C;
+    --border: #E2E8F0;
+    --error: #E53E3E;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    padding: 24px 16px;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(11,61,107,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(0,168,232,0.04) 0%, transparent 50%);
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .page-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .page-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 6px;
+  }
+  .page-header p {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  /* Card */
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(11,61,107,0.06);
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--primary);
+  }
+
+  /* Form */
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .form-row.single {
+    grid-template-columns: 1fr;
+  }
+  .form-row.triple {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+  .form-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .form-label .required {
+    color: var(--error);
+    margin-left: 2px;
+  }
+  .form-control {
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text);
+    background: #fff;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .form-control:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,168,232,0.1);
+  }
+  .form-control:read-only {
+    background: #F8FAFC;
+    color: var(--text-secondary);
+  }
+  select.form-control {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235A6B7C' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+  }
+
+  /* Custom input group for "직접 입력" */
+  .custom-input-group {
+    display: none;
+    margin-top: 8px;
+  }
+  .custom-input-group.visible {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* Section divider inside card */
+  .form-divider {
+    border: none;
+    border-top: 1px dashed var(--border);
+    margin: 20px 0;
+  }
+
+  /* Buttons */
+  .btn-generate {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 15px rgba(11,61,107,0.3);
+    letter-spacing: 0.5px;
+  }
+  .btn-generate:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(11,61,107,0.4);
+  }
+  .btn-generate:active { transform: translateY(0); }
+  .btn-generate svg {
+    width: 22px; height: 22px;
+    fill: none; stroke: white;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  .btn-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px;
+    background: white;
+    color: var(--primary);
+    border: 1.5px solid var(--primary);
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 12px;
+  }
+  .btn-preview:hover {
+    background: rgba(11,61,107,0.04);
+  }
+  .btn-preview svg {
+    width: 20px; height: 20px;
+    fill: none; stroke: currentColor;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  /* QR Result */
+  .qr-result { display: none; }
+  .qr-result.visible { display: block; }
+  .qr-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .qr-item { text-align: center; }
+  .qr-item h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 16px;
+  }
+  .qr-item canvas {
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    background: white;
+  }
+  .btn-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 14px;
+    padding: 10px 20px;
+    background: white;
+    color: var(--primary);
+    border: 1.5px solid var(--primary);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-download:hover {
+    background: var(--primary);
+    color: white;
+  }
+  .btn-download svg {
+    width: 16px; height: 16px;
+    fill: none; stroke: currentColor;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  /* ===== Phone Mockup Preview ===== */
+  .preview-modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    overflow-y: auto;
+    padding: 24px 16px;
+    backdrop-filter: blur(4px);
+  }
+  .preview-modal.visible { display: flex; align-items: flex-start; justify-content: center; }
+  .preview-modal-inner {
+    background: var(--bg);
+    border-radius: 20px;
+    padding: 28px;
+    max-width: 900px;
+    width: 100%;
+    position: relative;
+    margin: 20px 0;
+  }
+  .preview-modal-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: var(--border);
+    color: var(--text);
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .preview-modal-close:hover { background: #CBD5E0; }
+  .preview-modal h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 8px;
+  }
+  .preview-modal .subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+  }
+  .phone-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .phone-group h3 {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+  .phone-group h3 span {
+    display: inline-block;
+    padding: 3px 10px;
+    background: var(--primary);
+    color: white;
+    border-radius: 6px;
+    font-size: 11px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  /* Phone frame */
+  .phone-frame {
+    width: 260px;
+    margin: 0 auto;
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  }
+  .phone-frame.ios { background: #F2F2F7; }
+  .phone-frame.android { background: #FAFAFA; }
+
+  /* iOS style */
+  .ios .phone-statusbar {
+    background: #F2F2F7;
+    padding: 8px 20px 4px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 600;
+    color: #1C1C1E;
+  }
+  .ios .phone-header {
+    padding: 8px 16px 12px;
+    text-align: center;
+  }
+  .ios .phone-header .nav-label {
+    font-size: 11px;
+    color: #007AFF;
+  }
+  .ios .phone-header h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1C1C1E;
+    margin-top: 4px;
+  }
+  .ios .contact-card {
+    background: white;
+    margin: 0 12px 12px;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .ios .contact-avatar {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #C7C7CC, #8E8E93);
+    margin: 16px auto 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: white;
+    font-weight: 300;
+  }
+  .ios .contact-name {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1C1C1E;
+    padding: 0 16px 4px;
+  }
+  .ios .contact-org {
+    text-align: center;
+    font-size: 12px;
+    color: #8E8E93;
+    padding: 0 16px 12px;
+  }
+  .ios .contact-actions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 8px 16px 16px;
+  }
+  .ios .contact-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    color: #007AFF;
+  }
+  .ios .contact-action .icon-circle {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: #F2F2F7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+  .ios .contact-fields {
+    background: white;
+    margin: 0 12px 12px;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .ios .contact-field {
+    padding: 10px 16px;
+    border-bottom: 0.5px solid #E5E5EA;
+  }
+  .ios .contact-field:last-child { border-bottom: none; }
+  .ios .contact-field .field-label {
+    font-size: 11px;
+    color: #8E8E93;
+    margin-bottom: 2px;
+  }
+  .ios .contact-field .field-value {
+    font-size: 14px;
+    color: #007AFF;
+  }
+  .ios .contact-field .field-value.black {
+    color: #1C1C1E;
+  }
+
+  /* Android style */
+  .android .phone-statusbar {
+    background: white;
+    padding: 8px 16px 4px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #444;
+  }
+  .android .phone-header {
+    background: white;
+    padding: 8px 16px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .android .phone-header .back-arrow {
+    font-size: 18px;
+    color: #444;
+  }
+  .android .phone-header h4 {
+    font-size: 15px;
+    font-weight: 500;
+    color: #202124;
+  }
+  .android .contact-hero {
+    background: white;
+    text-align: center;
+    padding: 16px 16px 20px;
+    border-bottom: 1px solid #E8EAED;
+  }
+  .android .contact-avatar {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8AB4F8, #4285F4);
+    margin: 0 auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: white;
+    font-weight: 400;
+  }
+  .android .contact-name {
+    font-size: 20px;
+    font-weight: 400;
+    color: #202124;
+    margin-bottom: 2px;
+  }
+  .android .contact-org {
+    font-size: 13px;
+    color: #5F6368;
+  }
+  .android .contact-actions {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    padding: 16px;
+    background: white;
+    border-bottom: 1px solid #E8EAED;
+  }
+  .android .contact-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #1A73E8;
+  }
+  .android .contact-action .icon-circle {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: #E8F0FE;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: #1A73E8;
+  }
+  .android .contact-fields {
+    background: white;
+  }
+  .android .contact-field {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #F1F3F4;
+  }
+  .android .contact-field:last-child { border-bottom: none; }
+  .android .contact-field .field-icon {
+    font-size: 18px;
+    color: #5F6368;
+    margin-top: 2px;
+    width: 24px;
+    text-align: center;
+  }
+  .android .contact-field .field-value {
+    font-size: 14px;
+    color: #202124;
+  }
+  .android .contact-field .field-label {
+    font-size: 12px;
+    color: #5F6368;
+    margin-top: 1px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--text);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.22,1,0.36,1);
+    z-index: 300;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .form-row, .form-row.triple {
+      grid-template-columns: 1fr;
+    }
+    .qr-grid {
+      grid-template-columns: 1fr;
+    }
+    .custom-input-group.visible {
+      grid-template-columns: 1fr;
+    }
+    .phone-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="page-header">
+    <h1>김해공항 직원 QR 명함 생성기</h1>
+    <p>정보를 입력하면 한국어·영어 QR 명함을 바로 생성합니다</p>
+  </div>
+
+  <!-- 인적사항 입력 (연락처 포함) -->
+  <div class="card">
+    <h2 class="card-title">인적사항</h2>
+
+    <div class="form-row triple">
+      <div class="form-group">
+        <label class="form-label">이름 (한글)<span class="required">*</span></label>
+        <input type="text" id="nameKo" class="form-control" placeholder="예) 홍길동">
+      </div>
+      <div class="form-group">
+        <label class="form-label">이름 (영문 First)<span class="required">*</span></label>
+        <input type="text" id="nameEnFirst" class="form-control" placeholder="예) Gildong">
+      </div>
+      <div class="form-group">
+        <label class="form-label">이름 (영문 Last)<span class="required">*</span></label>
+        <input type="text" id="nameEnLast" class="form-control" placeholder="예) HONG">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">소속 (한글)</label>
+        <input type="text" id="orgKo" class="form-control" value="한국공항공사 김해공항">
+      </div>
+      <div class="form-group">
+        <label class="form-label">소속 (영문)</label>
+        <input type="text" id="orgEn" class="form-control" value="Gimhae International Airport, Korea Airports Corporation">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">부서<span class="required">*</span></label>
+        <select id="deptSelect" class="form-control">
+          <option value="">-- 부서 선택 --</option>
+          <option value="공항운영센터">공항운영센터</option>
+          <option value="운영단">운영단</option>
+          <option value="총괄기획부">총괄기획부</option>
+          <option value="재무관리부">재무관리부</option>
+          <option value="운영계획부">운영계획부</option>
+          <option value="고객서비스부">고객서비스부</option>
+          <option value="보안관리부">보안관리부</option>
+          <option value="시설단">시설단</option>
+          <option value="AS운영부">AS운영부</option>
+          <option value="토목부">토목부</option>
+          <option value="건축시설부">건축시설부</option>
+          <option value="기계시설부">기계시설부</option>
+          <option value="전력시설부">전력시설부</option>
+          <option value="항행전자부">항행전자부</option>
+          <option value="항행통신부">항행통신부</option>
+          <option value="__custom__">직접 입력</option>
+          <option value="__none__">선택 안함 (공항장 전용)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">부서 (영문)</label>
+        <input type="text" id="deptEn" class="form-control" placeholder="부서 선택 시 자동 입력" readonly>
+      </div>
+    </div>
+
+    <!-- 직접 입력 영역 -->
+    <div class="custom-input-group" id="customDeptGroup">
+      <div class="form-group">
+        <label class="form-label">부서명 직접 입력 (한글)<span class="required">*</span></label>
+        <input type="text" id="deptCustomKo" class="form-control" placeholder="부서명 입력">
+      </div>
+      <div class="form-group">
+        <label class="form-label">부서명 직접 입력 (영문)<span class="required">*</span></label>
+        <input type="text" id="deptCustomEn" class="form-control" placeholder="Department name">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">직위<span class="required">*</span></label>
+        <select id="titleSelect" class="form-control">
+          <option value="">-- 직위 선택 --</option>
+          <option value="공항장">공항장</option>
+          <option value="단장">단장</option>
+          <option value="부장">부장</option>
+          <option value="센터장">센터장</option>
+          <option value="차장">차장</option>
+          <option value="과장">과장</option>
+          <option value="대리">대리</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">직위 (영문)</label>
+        <input type="text" id="titleEn" class="form-control" placeholder="직위 선택 시 자동 입력" readonly>
+      </div>
+    </div>
+
+    <hr class="form-divider">
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">휴대폰<span class="required">*</span></label>
+        <input type="text" id="cell" class="form-control" placeholder="예) 00000000000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">직장전화<span class="required">*</span></label>
+        <input type="text" id="work" class="form-control" placeholder="예) 0519740000">
+      </div>
+    </div>
+
+    <div class="form-row single">
+      <div class="form-group">
+        <label class="form-label">이메일<span class="required">*</span></label>
+        <input type="email" id="email" class="form-control" placeholder="예) abcd1234@airport.co.kr">
+      </div>
+    </div>
+  </div>
+
+  <!-- 상대방 QR 촬영 시 예시 버튼 -->
+  <button type="button" class="btn-preview" id="btnPreviewExample" onclick="openPreviewModal()">
+    <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+    상대방 QR 촬영 시 예시
+  </button>
+
+  <!-- 생성 버튼 -->
+  <button type="button" class="btn-generate" id="btnGenerate" onclick="generateQR()">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14h1v1h-1zM14 20h1v1h-1zM17 17h3v3h-3z"/></svg>
+    QR 코드 생성
+  </button>
+
+  <!-- QR 결과 -->
+  <div class="card qr-result" id="qrResult">
+    <h2 class="card-title">QR 명함</h2>
+    <div class="qr-grid">
+      <div class="qr-item">
+        <h3>한국어 명함</h3>
+        <canvas id="qrKorean"></canvas>
+        <br>
+        <button type="button" class="btn-download" onclick="downloadQR('qrKorean', 'ko')">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          이미지 다운로드
+        </button>
+      </div>
+      <div class="qr-item">
+        <h3>English Namecard</h3>
+        <canvas id="qrEnglish"></canvas>
+        <br>
+        <button type="button" class="btn-download" onclick="downloadQR('qrEnglish', 'en')">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download Image
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== QR 촬영 예시 모달 ===== -->
+<div class="preview-modal" id="previewModal">
+  <div class="preview-modal-inner">
+    <button class="preview-modal-close" onclick="closePreviewModal()">&times;</button>
+    <h2>상대방 QR 촬영 시 예시</h2>
+    <p class="subtitle">상대방이 QR 코드를 스캔하면 아래와 같이 연락처가 표시됩니다</p>
+
+    <div class="phone-grid">
+
+      <!-- iOS 한국어 -->
+      <div class="phone-group">
+        <h3><span>iOS</span> 한국어 명함</h3>
+        <div class="phone-frame ios">
+          <div class="phone-statusbar">
+            <span>9:41</span>
+            <span>&#9679;&#9679;&#9679;</span>
+          </div>
+          <div class="phone-header">
+            <div class="nav-label">&lt; 카메라</div>
+            <h4>새로운 연락처</h4>
+          </div>
+          <div class="contact-card">
+            <div class="contact-avatar" id="iosKoAvatar">홍</div>
+            <div class="contact-name" id="iosKoName">홍길동</div>
+            <div class="contact-org" id="iosKoOrg">한국공항공사 김해공항</div>
+            <div class="contact-actions">
+              <div class="contact-action"><div class="icon-circle">&#9743;</div>전화</div>
+              <div class="contact-action"><div class="icon-circle">&#9993;</div>메시지</div>
+              <div class="contact-action"><div class="icon-circle">&#9993;</div>메일</div>
+            </div>
+          </div>
+          <div class="contact-fields">
+            <div class="contact-field">
+              <div class="field-label">휴대전화</div>
+              <div class="field-value" id="iosKoCell">+82-10-0000-0000</div>
+            </div>
+            <div class="contact-field">
+              <div class="field-label">직장</div>
+              <div class="field-value" id="iosKoWork">+82-51-974-0000</div>
+            </div>
+            <div class="contact-field">
+              <div class="field-label">직장</div>
+              <div class="field-value" id="iosKoEmail">abcd1234@airport.co.kr</div>
+            </div>
+            <div class="contact-field">
+              <div class="field-label">회사</div>
+              <div class="field-value black" id="iosKoDept">한국공항공사 김해공항 총괄기획부</div>
+            </div>
+            <div class="contact-field">
+              <div class="field-label">직위</div>
+              <div class="field-value black" id="iosKoTitle">과장</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- iOS 영어 -->
+      <div class="phone-group">
+        <h3><span>iOS</span> English Namecard</h3>
+        <div class="phone-frame ios">
+          <div class="phone-statusbar">
+            <span>9:41</span>
+            <span>&#9679;&#9679;&#9679;</span>
+          </div>
+          <div class="phone-header">
+            <div class="nav-label">&lt; Camera</div>
+            <h4>New Contact</h4>
+          </div>
+          <div class="contact-card">
+            <div class="contact-avatar" id="iosEnAvatar">H</div>
+            <div class="contact-name" id="iosEnName">Gildong HONG</div>
+            <div class="contact-org" id="iosEnOrg">KAC Gimhae Airport</div>
+            <div class="contact-actions">
+              <div class="contact-action"><div class="icon-circle">&#9743;</div>Call</div>
+              <div class="contact-action"><div class="icon-circle">&#9993;</div>Message</div>
+              <div class="contact-action"><div class="icon-circle">&#9993;</div>Mail</div>
+            </div>
+          </div>
+          <div class="contact-fields">
+            <div class="contact-field">
+              <div class="field-label">mobile</div>
+              <div class="field-value" id="iosEnCell">+82-10-0000-0000</div>
+            </div>
+            <div class="contact-field">
+              <div class="field-label">work</div>
+              <div class="field-value" id="iosEnWork">+82-51-974-0000</div>
+            </div>
+            <div class="contact-field">
+              <div class="field-label">work</div>
+              <div class="field-value" id="iosEnEmail">abcd1234@airport.co.kr</div>
+            </div>
+            <div class="contact-field">
+              <div class="field-label">company</div>
+              <div class="field-value black" id="iosEnDept">Gimhae Intl. Airport, KAC</div>
+            </div>
+            <div class="contact-field">
+              <div class="field-label">title</div>
+              <div class="field-value black" id="iosEnTitle">Manager</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Android 한국어 -->
+      <div class="phone-group">
+        <h3><span>Android</span> 한국어 명함</h3>
+        <div class="phone-frame android">
+          <div class="phone-statusbar">
+            <span>9:41</span>
+            <span>&#9679; &#9679; &#9679;</span>
+          </div>
+          <div class="phone-header">
+            <div class="back-arrow">&#8592;</div>
+            <h4>연락처 저장</h4>
+          </div>
+          <div class="contact-hero">
+            <div class="contact-avatar" id="aosKoAvatar">홍</div>
+            <div class="contact-name" id="aosKoName">홍길동</div>
+            <div class="contact-org" id="aosKoOrg">한국공항공사 김해공항 · 과장</div>
+          </div>
+          <div class="contact-actions">
+            <div class="contact-action"><div class="icon-circle">&#9743;</div>전화</div>
+            <div class="contact-action"><div class="icon-circle">&#9993;</div>문자</div>
+            <div class="contact-action"><div class="icon-circle">@</div>이메일</div>
+          </div>
+          <div class="contact-fields">
+            <div class="contact-field">
+              <div class="field-icon">&#9743;</div>
+              <div>
+                <div class="field-value" id="aosKoCell">+82-10-0000-0000</div>
+                <div class="field-label">휴대전화</div>
+              </div>
+            </div>
+            <div class="contact-field">
+              <div class="field-icon">&#9743;</div>
+              <div>
+                <div class="field-value" id="aosKoWork">+82-51-974-0000</div>
+                <div class="field-label">직장</div>
+              </div>
+            </div>
+            <div class="contact-field">
+              <div class="field-icon">@</div>
+              <div>
+                <div class="field-value" id="aosKoEmail">abcd1234@airport.co.kr</div>
+                <div class="field-label">직장</div>
+              </div>
+            </div>
+            <div class="contact-field">
+              <div class="field-icon">&#127970;</div>
+              <div>
+                <div class="field-value" id="aosKoDept">한국공항공사 김해공항 총괄기획부</div>
+                <div class="field-label">회사</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Android 영어 -->
+      <div class="phone-group">
+        <h3><span>Android</span> English Namecard</h3>
+        <div class="phone-frame android">
+          <div class="phone-statusbar">
+            <span>9:41</span>
+            <span>&#9679; &#9679; &#9679;</span>
+          </div>
+          <div class="phone-header">
+            <div class="back-arrow">&#8592;</div>
+            <h4>Save contact</h4>
+          </div>
+          <div class="contact-hero">
+            <div class="contact-avatar" id="aosEnAvatar">H</div>
+            <div class="contact-name" id="aosEnName">Gildong HONG</div>
+            <div class="contact-org" id="aosEnOrg">KAC Gimhae Airport · Manager</div>
+          </div>
+          <div class="contact-actions">
+            <div class="contact-action"><div class="icon-circle">&#9743;</div>Call</div>
+            <div class="contact-action"><div class="icon-circle">&#9993;</div>Text</div>
+            <div class="contact-action"><div class="icon-circle">@</div>Email</div>
+          </div>
+          <div class="contact-fields">
+            <div class="contact-field">
+              <div class="field-icon">&#9743;</div>
+              <div>
+                <div class="field-value" id="aosEnCell">+82-10-0000-0000</div>
+                <div class="field-label">Mobile</div>
+              </div>
+            </div>
+            <div class="contact-field">
+              <div class="field-icon">&#9743;</div>
+              <div>
+                <div class="field-value" id="aosEnWork">+82-51-974-0000</div>
+                <div class="field-label">Work</div>
+              </div>
+            </div>
+            <div class="contact-field">
+              <div class="field-icon">@</div>
+              <div>
+                <div class="field-value" id="aosEnEmail">abcd1234@airport.co.kr</div>
+                <div class="field-label">Work</div>
+              </div>
+            </div>
+            <div class="contact-field">
+              <div class="field-icon">&#127970;</div>
+              <div>
+                <div class="field-value" id="aosEnDept">Gimhae Intl. Airport, KAC</div>
+                <div class="field-label">Company</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.phone-grid -->
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+<script>
+// === 데이터 ===
+const DEPARTMENTS = {
+  '공항운영센터': 'Airport Operations Control Center',
+  '운영단': 'Landside Operations Office',
+  '총괄기획부': 'General Administration Dept.',
+  '재무관리부': 'Financial Management Dept.',
+  '운영계획부': 'Terminal Operations & Planning Dept.',
+  '고객서비스부': 'Customer Service Dept.',
+  '보안관리부': 'Security Control Dept.',
+  '시설단': 'Airside Operations Office',
+  'AS운영부': 'Airside Operations Dept.',
+  '토목부': 'Civil Engineering Dept.',
+  '건축시설부': 'Construction & Facilities Management Dept.',
+  '기계시설부': 'Mechanical Systems Dept.',
+  '전력시설부': 'Electrical Facilities Dept.',
+  '항행전자부': 'Air Navigation Electronics Dept.',
+  '항행통신부': 'Air Navigation Communications Dept.'
+};
+
+const TITLES = {
+  '공항장': 'Chief Officer of Airport',
+  '단장': 'Director',
+  '부장': 'General Manager',
+  '센터장': 'Head',
+  '차장': 'Deputy General Manager',
+  '과장': 'Manager',
+  '대리': 'Assistant Manager'
+};
+
+// === 부서 드롭다운 연동 ===
+document.getElementById('deptSelect').addEventListener('change', function() {
+  const val = this.value;
+  const deptEnInput = document.getElementById('deptEn');
+  const customGroup = document.getElementById('customDeptGroup');
+
+  if (val === '__custom__') {
+    customGroup.classList.add('visible');
+    deptEnInput.value = '';
+    deptEnInput.readOnly = true;
+  } else if (val === '__none__') {
+    customGroup.classList.remove('visible');
+    deptEnInput.value = '';
+    deptEnInput.readOnly = true;
+  } else if (val && DEPARTMENTS[val]) {
+    customGroup.classList.remove('visible');
+    deptEnInput.value = DEPARTMENTS[val];
+    deptEnInput.readOnly = true;
+  } else {
+    customGroup.classList.remove('visible');
+    deptEnInput.value = '';
+    deptEnInput.readOnly = true;
+  }
+});
+
+// === 직위 드롭다운 연동 ===
+document.getElementById('titleSelect').addEventListener('change', function() {
+  const val = this.value;
+  const titleEnInput = document.getElementById('titleEn');
+  if (val && TITLES[val]) {
+    titleEnInput.value = TITLES[val];
+  } else {
+    titleEnInput.value = '';
+  }
+});
+
+// === 전화번호 포맷 ===
+function formatPhone(raw) {
+  let digits = raw.replace(/[^0-9]/g, '');
+  if (digits.startsWith('0')) {
+    return '+82-' + digits.substring(1).replace(/(\d{1,2})(\d{3,4})(\d{4})/, '$1-$2-$3');
+  }
+  if (raw.startsWith('+')) return raw;
+  return raw;
+}
+
+// === 유효성 검사 ===
+function validate() {
+  const fields = [
+    { id: 'nameKo', label: '이름 (한글)' },
+    { id: 'nameEnFirst', label: '이름 (영문 First)' },
+    { id: 'nameEnLast', label: '이름 (영문 Last)' },
+    { id: 'cell', label: '휴대폰' },
+    { id: 'work', label: '직장전화' },
+    { id: 'email', label: '이메일' }
+  ];
+
+  for (const f of fields) {
+    if (!document.getElementById(f.id).value.trim()) {
+      showToast(f.label + '을(를) 입력해주세요.');
+      document.getElementById(f.id).focus();
+      return false;
+    }
+  }
+
+  const deptVal = document.getElementById('deptSelect').value;
+  if (!deptVal) {
+    showToast('부서를 선택해주세요.');
+    document.getElementById('deptSelect').focus();
+    return false;
+  }
+  if (deptVal === '__none__') {
+    // 선택 안함 (공항장 전용) - 부서 검증 건너뜀
+  } else if (deptVal === '__custom__') {
+    if (!document.getElementById('deptCustomKo').value.trim()) {
+      showToast('부서명 (한글)을 입력해주세요.');
+      document.getElementById('deptCustomKo').focus();
+      return false;
+    }
+    if (!document.getElementById('deptCustomEn').value.trim()) {
+      showToast('부서명 (영문)을 입력해주세요.');
+      document.getElementById('deptCustomEn').focus();
+      return false;
+    }
+  }
+
+  if (!document.getElementById('titleSelect').value) {
+    showToast('직위를 선택해주세요.');
+    document.getElementById('titleSelect').focus();
+    return false;
+  }
+
+  return true;
+}
+
+// === QR 생성 ===
+function generateQR() {
+  if (!validate()) return;
+
+  const nameKo = document.getElementById('nameKo').value.trim();
+  const nameEnFirst = document.getElementById('nameEnFirst').value.trim();
+  const nameEnLast = document.getElementById('nameEnLast').value.trim();
+  const orgKo = document.getElementById('orgKo').value.trim();
+  const orgEn = document.getElementById('orgEn').value.trim();
+
+  const deptVal = document.getElementById('deptSelect').value;
+  let deptKo, deptEn;
+  if (deptVal === '__none__') {
+    deptKo = '';
+    deptEn = '';
+  } else if (deptVal === '__custom__') {
+    deptKo = document.getElementById('deptCustomKo').value.trim();
+    deptEn = document.getElementById('deptCustomEn').value.trim();
+  } else {
+    deptKo = deptVal;
+    deptEn = document.getElementById('deptEn').value.trim();
+  }
+
+  const titleKo = document.getElementById('titleSelect').value;
+  const titleEn = document.getElementById('titleEn').value.trim();
+
+  const cell = formatPhone(document.getElementById('cell').value.trim());
+  const work = formatPhone(document.getElementById('work').value.trim());
+  const email = document.getElementById('email').value.trim();
+
+  const orgLineKo = deptKo ? 'ORG:' + orgKo + ';' + deptKo : 'ORG:' + orgKo;
+  const orgLineEn = deptEn ? 'ORG:' + orgEn + ';' + deptEn : 'ORG:' + orgEn;
+
+  const vcardKr = [
+    'BEGIN:VCARD',
+    'VERSION:3.0',
+    'N:' + nameKo + ';;;;',
+    'FN:\uD55C\uAD6D\uACF5\uD56D\uACF5\uC0AC(\uAE40\uD574\uACF5\uD56D) ' + nameKo + ' ' + titleKo,
+    orgLineKo,
+    'TITLE:' + titleKo,
+    'TEL;TYPE=CELL:' + cell,
+    'TEL;TYPE=WORK:' + work,
+    'EMAIL;TYPE=WORK:' + email,
+    'END:VCARD'
+  ].join('\n');
+
+  const vcardEn = [
+    'BEGIN:VCARD',
+    'VERSION:3.0',
+    'N:' + nameEnLast + ';' + nameEnFirst + ';;;',
+    'FN:' + nameEnFirst + ' ' + nameEnLast + ' (KAC Gimhae Airport)',
+    orgLineEn,
+    'TITLE:' + titleEn,
+    'TEL;TYPE=CELL:' + cell,
+    'TEL;TYPE=WORK:' + work,
+    'EMAIL;TYPE=WORK:' + email,
+    'END:VCARD'
+  ].join('\n');
+
+  const qrOptions = {
+    errorCorrectionLevel: 'M',
+    width: 280,
+    margin: 2,
+    color: {
+      dark: '#0B3D6B',
+      light: '#FFFFFF'
+    }
+  };
+
+  const canvasKo = document.getElementById('qrKorean');
+  const canvasEn = document.getElementById('qrEnglish');
+
+  QRCode.toCanvas(canvasKo, vcardKr, qrOptions, function(err) {
+    if (err) {
+      showToast('\uD55C\uAD6D\uC5B4 QR \uC0DD\uC131 \uC2E4\uD328: ' + err.message);
+      return;
+    }
+  });
+
+  QRCode.toCanvas(canvasEn, vcardEn, qrOptions, function(err) {
+    if (err) {
+      showToast('\uC601\uC5B4 QR \uC0DD\uC131 \uC2E4\uD328: ' + err.message);
+      return;
+    }
+  });
+
+  var resultEl = document.getElementById('qrResult');
+  resultEl.classList.add('visible');
+  setTimeout(function() {
+    resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+
+  showToast('QR \uCF54\uB4DC\uAC00 \uC0DD\uC131\uB418\uC5C8\uC2B5\uB2C8\uB2E4!');
+}
+
+// === 이미지 다운로드 ===
+function downloadQR(canvasId, lang) {
+  var canvas = document.getElementById(canvasId);
+  var nameKo = document.getElementById('nameKo').value.trim();
+  var nameEnLast = document.getElementById('nameEnLast').value.trim();
+
+  var prefix = nameEnLast + nameKo;
+  var suffix = lang === 'ko' ? 'Korean' : 'English';
+  var filename = 'QR_' + suffix + '_' + prefix + '.png';
+
+  var link = document.createElement('a');
+  link.download = filename;
+  link.href = canvas.toDataURL('image/png');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  showToast(filename + ' \uB2E4\uC6B4\uB85C\uB4DC \uC644\uB8CC');
+}
+
+// === 예시 모달 ===
+function openPreviewModal() {
+  // 현재 폼 값으로 목업 업데이트
+  var nameKo = document.getElementById('nameKo').value.trim() || '\uD64D\uAE38\uB3D9';
+  var nameEnFirst = document.getElementById('nameEnFirst').value.trim() || 'Gildong';
+  var nameEnLast = document.getElementById('nameEnLast').value.trim() || 'HONG';
+  var orgKo = document.getElementById('orgKo').value.trim();
+  var orgEn = document.getElementById('orgEn').value.trim();
+
+  var deptVal = document.getElementById('deptSelect').value;
+  var deptKo, deptEn;
+  if (deptVal === '__none__') {
+    deptKo = '';
+    deptEn = '';
+  } else if (deptVal === '__custom__') {
+    deptKo = document.getElementById('deptCustomKo').value.trim() || '\uCD1D\uAD04\uAE30\uD68D\uBD80';
+    deptEn = document.getElementById('deptCustomEn').value.trim() || 'General Administration Dept.';
+  } else if (deptVal && DEPARTMENTS[deptVal]) {
+    deptKo = deptVal;
+    deptEn = DEPARTMENTS[deptVal];
+  } else {
+    deptKo = '\uCD1D\uAD04\uAE30\uD68D\uBD80';
+    deptEn = 'General Administration Dept.';
+  }
+
+  var titleKo = document.getElementById('titleSelect').value || '\uACFC\uC7A5';
+  var titleEn = document.getElementById('titleEn').value.trim() || 'Manager';
+
+  var cellRaw = document.getElementById('cell').value.trim() || '00000000000';
+  var workRaw = document.getElementById('work').value.trim() || '0519740000';
+  var emailVal = document.getElementById('email').value.trim() || 'abcd1234@airport.co.kr';
+
+  var cellFmt = formatPhone(cellRaw);
+  var workFmt = formatPhone(workRaw);
+  var enName = nameEnFirst + ' ' + nameEnLast;
+  var koInitial = nameKo.charAt(0);
+  var enInitial = nameEnLast.charAt(0).toUpperCase();
+
+  // iOS 한국어
+  document.getElementById('iosKoAvatar').textContent = koInitial;
+  document.getElementById('iosKoName').textContent = nameKo;
+  document.getElementById('iosKoOrg').textContent = orgKo;
+  document.getElementById('iosKoCell').textContent = cellFmt;
+  document.getElementById('iosKoWork').textContent = workFmt;
+  document.getElementById('iosKoEmail').textContent = emailVal;
+  document.getElementById('iosKoDept').textContent = deptKo ? orgKo + ' ' + deptKo : orgKo;
+  document.getElementById('iosKoTitle').textContent = titleKo;
+
+  // iOS 영어
+  document.getElementById('iosEnAvatar').textContent = enInitial;
+  document.getElementById('iosEnName').textContent = enName;
+  document.getElementById('iosEnOrg').textContent = 'KAC Gimhae Airport';
+  document.getElementById('iosEnCell').textContent = cellFmt;
+  document.getElementById('iosEnWork').textContent = workFmt;
+  document.getElementById('iosEnEmail').textContent = emailVal;
+  document.getElementById('iosEnDept').textContent = deptEn || orgEn;
+  document.getElementById('iosEnTitle').textContent = titleEn;
+
+  // Android 한국어
+  document.getElementById('aosKoAvatar').textContent = koInitial;
+  document.getElementById('aosKoName').textContent = nameKo;
+  document.getElementById('aosKoOrg').textContent = orgKo + ' \u00B7 ' + titleKo;
+  document.getElementById('aosKoCell').textContent = cellFmt;
+  document.getElementById('aosKoWork').textContent = workFmt;
+  document.getElementById('aosKoEmail').textContent = emailVal;
+  document.getElementById('aosKoDept').textContent = deptKo ? orgKo + ' ' + deptKo : orgKo;
+
+  // Android 영어
+  document.getElementById('aosEnAvatar').textContent = enInitial;
+  document.getElementById('aosEnName').textContent = enName;
+  document.getElementById('aosEnOrg').textContent = 'KAC Gimhae Airport \u00B7 ' + titleEn;
+  document.getElementById('aosEnCell').textContent = cellFmt;
+  document.getElementById('aosEnWork').textContent = workFmt;
+  document.getElementById('aosEnEmail').textContent = emailVal;
+  document.getElementById('aosEnDept').textContent = deptEn || orgEn;
+
+  document.getElementById('previewModal').classList.add('visible');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePreviewModal() {
+  document.getElementById('previewModal').classList.remove('visible');
+  document.body.style.overflow = '';
+}
+
+// 모달 바깥 클릭 시 닫기
+document.getElementById('previewModal').addEventListener('click', function(e) {
+  if (e.target === this) closePreviewModal();
+});
+
+// ESC 키로 닫기
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closePreviewModal();
+});
+
+// === 토스트 알림 ===
+function showToast(msg) {
+  var toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(function() {
+    toast.classList.remove('show');
+  }, 2500);
+}
+</script>
+</body>
+</html>
