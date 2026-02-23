@@ -179,6 +179,58 @@ gtag('config', 'G-33E0NMRKQ6');
   }
 
 
+  /* QR Result */
+  .qr-result {
+    display: none;
+    text-align: center;
+  }
+  .qr-result.visible {
+    display: block;
+  }
+  .qr-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+  .qr-item { text-align: center; }
+  .qr-item h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 16px;
+  }
+  .qr-item canvas {
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    background: white;
+  }
+  .btn-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-download:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+  .btn-download svg {
+    width: 16px; height: 16px;
+    fill: none; stroke: white;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
   /* Toast */
   .toast {
     position: fixed;
