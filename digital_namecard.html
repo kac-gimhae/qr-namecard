@@ -7,10 +7,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --primary: #0B3D6B;
-    --primary-light: #1565A0;
-    --accent: #00A8E8;
-    --accent-glow: rgba(0, 168, 232, 0.15);
+    --primary: #7C211E;
+    --primary-light: #A63B38;
+    --accent: #D4726A;
+    --accent-glow: rgba(124, 33, 30, 0.12);
     --bg: #F7F9FC;
     --card: #FFFFFF;
     --text: #1A2B3C;
@@ -27,8 +27,8 @@
     justify-content: center;
     padding: 20px;
     background-image:
-      radial-gradient(ellipse at 20% 50%, rgba(11,61,107,0.04) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 20%, rgba(0,168,232,0.04) 0%, transparent 50%);
+      radial-gradient(ellipse at 20% 50%, rgba(124,33,30,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(212,114,106,0.04) 0%, transparent 50%);
   }
   .card-wrapper {
     width: 100%;
@@ -45,8 +45,8 @@
     overflow: hidden;
     box-shadow:
       0 1px 3px rgba(0,0,0,0.04),
-      0 8px 24px rgba(11,61,107,0.08),
-      0 20px 60px rgba(11,61,107,0.04);
+      0 8px 24px rgba(124,33,30,0.08),
+      0 20px 60px rgba(124,33,30,0.04);
   }
   .card-header {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 60%, var(--accent) 100%);
@@ -67,24 +67,15 @@
     position: absolute;
     bottom: -60%; left: -10%;
     width: 200px; height: 200px;
-    background: radial-gradient(circle, rgba(0,168,232,0.12) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(212,114,106,0.12) 0%, transparent 70%);
     border-radius: 50%;
   }
   .logo-area {
-    display: flex; align-items: center; gap: 10px;
     margin-bottom: 20px; position: relative; z-index: 1;
   }
-  .logo-icon {
-    width: 36px; height: 36px;
-    background: rgba(255,255,255,0.15);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    backdrop-filter: blur(10px);
-  }
-  .logo-icon svg { width: 20px; height: 20px; fill: white; }
-  .org-label {
-    font-size: 12px; color: rgba(255,255,255,0.8);
-    letter-spacing: 1.5px; text-transform: uppercase; font-weight: 500;
+  .logo-area img {
+    height: 28px;
+    filter: grayscale(1) brightness(10);
   }
   .name-area { position: relative; z-index: 1; }
   .name-primary {
@@ -128,7 +119,7 @@
   }
   .contact-icon.phone { background: linear-gradient(135deg, #E8F5E9, #C8E6C9); }
   .contact-icon.phone svg { stroke: #2E7D32; }
-  .contact-icon.office { background: linear-gradient(135deg, #E3F2FD, #BBDEFB); }
+  .contact-icon.office { background: linear-gradient(135deg, #FDECEA, #F5C6C2); }
   .contact-icon.office svg { stroke: var(--primary); }
   .contact-icon.email { background: linear-gradient(135deg, #FFF3E0, #FFE0B2); }
   .contact-icon.email svg { stroke: #E65100; }
@@ -153,9 +144,9 @@
     font-size: 15px; font-weight: 600;
     font-family: 'Noto Sans KR', sans-serif;
     cursor: pointer; transition: all 0.25s ease;
-    box-shadow: 0 4px 15px rgba(11,61,107,0.3); letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(124,33,30,0.3); letter-spacing: 0.5px;
   }
-  .save-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(11,61,107,0.4); }
+  .save-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(124,33,30,0.4); }
   .save-btn:active { transform: translateY(0); }
   .save-btn svg {
     width: 20px; height: 20px; fill: none;
@@ -197,10 +188,7 @@
   <div class="card">
     <div class="card-header">
       <div class="logo-area">
-        <div class="logo-icon">
-          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-        </div>
-        <span class="org-label" id="orgLabel">KOREA AIRPORTS CORPORATION</span>
+        <img src="01-1.png" alt="한국공항공사 김해공항">
       </div>
       <div class="name-area">
         <div class="name-primary" id="namePrimary"></div>
@@ -347,7 +335,6 @@ var vcards = {
 
 var ui = {
   ko: {
-    orgLabel: 'KOREA AIRPORTS CORPORATION',
     namePrimary: nameKoSpaced,
     nameSecondary: enFullName,
     titleBadge: DATA.titleKo + ' · ' + DATA.titleEn,
@@ -361,7 +348,6 @@ var ui = {
     saveSuccess: '저장 완료!'
   },
   en: {
-    orgLabel: 'KOREA AIRPORTS CORPORATION',
     namePrimary: enFullName,
     nameSecondary: DATA.nameKo,
     titleBadge: DATA.titleEn,
@@ -399,7 +385,6 @@ let currentLang = 'ko';
 function setLang(lang) {
   currentLang = lang;
   var d = ui[lang];
-  document.getElementById('orgLabel').textContent = d.orgLabel;
   document.getElementById('namePrimary').textContent = d.namePrimary;
   document.getElementById('nameSecondary').textContent = d.nameSecondary;
   document.getElementById('titleBadge').textContent = d.titleBadge;
@@ -419,13 +404,8 @@ function saveContact() {
   var vcard = vcards[currentLang];
   var blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
   var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url;
-  a.download = DATA.enLast + DATA.nameKo + '_KAC.vcf';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  // download 속성 없이 직접 탐색 → iOS/Android 모두 연락처 앱 실행
+  window.location.href = url;
 
   var btn = document.getElementById('saveBtn');
   var d = ui[currentLang];
